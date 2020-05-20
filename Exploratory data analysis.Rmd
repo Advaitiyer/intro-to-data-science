@@ -1,0 +1,347 @@
+---
+title: "School Performance"
+author: "Advait"
+date: "4/5/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Imported the dataset, and viewed the summary and structure
+
+```{r school}
+file <- file.choose()
+school <- read.csv(file, sep = ",", header = TRUE, stringsAsFactors = FALSE)
+View(school)
+
+colnames(school)
+colnames(school) <- c("School", "Section", "Very Ahead", "Middling", "Behind", "More Behind", "Very Behind", "Completed")
+
+summary(school) # Provides information about the spread of the data within the columns
+str(school) # school is "character" and others are integer type
+table(school$School) # There are 5 schools. 
+table(school$Section) # There are 13 sections. 
+
+```
+
+## Visualization 1:
+
+```{r visualization 1}
+count3 <- table(school$School, school$Section)
+plot3 <- barplot(count3, col=c("lightblue4","lightblue3","lightblue2","lightblue1","lightcyan")
+                 , ylab = "Schools", xlab = "Sections"
+                 , main = "Number of Schools across Sections"
+                 , legend=rownames(count3))
+```
+# There are 13 sections in A, 12 sections in B, 3 sections in C, and 1 section in D and E respectively
+
+# Student-level wise distributions:
+
+```{r visualization 2}
+# Very Ahead: Histogram with mean line
+
+hist1 <- hist(school$`Very Ahead`
+              , col = "salmon", xlab = "Very Ahead", main = "Very Ahead: All Schools"
+              , xlim = c(0,60))
+abline(v=mean(school$`Very Ahead`),col="blue",lwd=4)
+```
+
+```{r visualization 3}
+# Middling: Histogram with mean line
+
+hist2 <- hist(school$Middling, col="indianred1", xlab = "Middling", main = "Middling: All Schools"
+              , xlim = c(0,60))
+abline(v=mean(school$Middling),col="blue",lwd=4)
+```
+
+```{r visualization 4}
+# Behind: Histogram with mean line
+
+hist3 <- hist(school$Behind, col="indianred2", xlab = "Behind", main = "Behind: All Schools", xlim = c(0,60))
+abline(v=mean(school$Behind),col="blue",lwd=4)
+```
+
+```{r visualization 5}
+# More Behind: Histogram with mean line
+
+hist4 <- hist(school$`More Behind`, col="indianred3", xlab = "More Behind", main = "More Behind: All Schools"
+              , xlim = c(0,60))
+abline(v=mean(school$`More Behind`),col="blue",lwd=4)
+```
+
+```{r visualization 6}
+# Very Behind: Histogram with mean line
+
+hist5 <- hist(school$`Very Behind`, col="indianred4", xlab = "Very Behind", main = "Very Behind: All Schools"
+              , xlim = c(0,60))
+abline(v=mean(school$`Very Behind`),col="blue",lwd=4)
+```
+
+```{r visualization 7}
+# Completed: Histogram with mean line
+
+hist6 <- hist(school$Completed, col="red4", xlab = "Completed", main = "Completed: All Schools"
+              , xlim = c(0,60))
+abline(v=mean(school$Completed),col="blue",lwd=4)
+```
+
+# Conclusion through visualizations:
+
+# There are no students who are very ahead in the course, in any school.
+# Most of the students are 1-5 lessons behind, across all the schools.
+# Following is the order of sizes of levels of completion:
+#             Behind > Completed > Middling > Very Behind > More Behind > Very Ahead 
+
+# Schoolwise distributions:
+
+```{r visualization 8}
+# Very Ahead: Schoolwise bar-chart
+
+Very_ahead_schoolwise <- tapply(school$`Very Ahead`, list(school$School), FUN = sum)
+bar1 <- barplot(Very_ahead_schoolwise, xlab="Schools", ylab="Number of Students", ylim=c(0,400)
+                , main = "Very Ahead: Schoolwise", col = "green3")
+```
+
+```{r visualization 9}
+# Middling: Schoolwise bar-chart
+
+Middling_schoolwise <- tapply(school$Middling, list(school$School), FUN = sum)
+bar2 <- barplot(Middling_schoolwise, xlab="Schools", ylab="Number of Students", ylim=c(0,400)
+                , main = "Middling: Schoolwise", col = "olivedrab3")
+```
+
+```{r visualization 10}
+# Behind: Schoolwise bar-chart
+
+Behind_schoolwise <- tapply(school$Behind, list(school$School), FUN = sum)
+bar3 <- barplot(Behind_schoolwise, xlab="Schools", ylab="Number of Students", ylim=c(0,400)
+                , main = "Behind: Schoolwise", col = "darkolivegreen1")
+```
+
+```{r visualization 11}
+# More Behind: Schoolwise bar-chart
+
+More_behind_schoolwise <- tapply(school$`More Behind`, list(school$School), FUN = sum)
+bar4 <- barplot(More_behind_schoolwise, xlab="Schools", ylab="Number of Students", ylim=c(0,400)
+                , main = "More Behind: Schoolwise", col = "darkolivegreen2")
+
+```
+
+```{r visualization 12}
+# Very Behind: Schoolwise bar-chart
+
+Very_behind_schoolwise <- tapply(school$`Very Behind`, list(school$School), FUN = sum)
+bar5 <- barplot(Very_behind_schoolwise, xlab="Schools", ylab="Number of Students", ylim=c(0,400)
+                , main = "Very Behind: Schoolwise", col = "darkolivegreen3")
+
+```
+
+```{r visualization 13}
+# Completed: Schoolwise bar-chart
+
+Completed_schoolwise <- tapply(school$Completed, list(school$School), FUN = sum)
+bar6 <- barplot(Completed_schoolwise, xlab="Schools", ylab="Number of Students", ylim=c(0,400)
+                , main = "Completed: Schoolwise", col = "darkolivegreen4")
+```
+
+# Conclusions:
+# The number of students across schools are: 
+#        A > B > C > E > D
+# The number of students who are behind (1-5 lessons behind) are strickingly higher than the other levels of completion.
+
+```{r Counts}
+# Adding count of total students:
+school$`Very Ahead` <- as.numeric(school$`Very Ahead`)
+school$Middling <- as.numeric(school$Middling)
+school$Behind <- as.numeric(school$Behind)
+school$`More Behind` <- as.numeric(school$`More Behind`)
+school$`Very Behind` <- as.numeric(school$`Very Behind`)
+school$Completed <- as.numeric(school$Completed)
+
+school$Total_students <- school$`Very Ahead` + school$Middling + school$Behind + school$`More Behind` +school$`Very Behind` + school$Completed
+
+```
+
+```{r Subsetting}
+SchoolA <- subset(school,school$School == "A") 
+SchoolB <- subset(school,school$School == "B") 
+SchoolC <- subset(school,school$School == "C") 
+SchoolD <- subset(school,school$School == "D") 
+SchoolE <- subset(school,school$School == "E")
+```
+
+```{r Distribution A}
+Distribution_A <- c(sum(SchoolA$`Very Ahead`)
+                    ,sum(SchoolA$Middling)
+                    ,sum(SchoolA$Behind)
+                    ,sum(SchoolA$`More Behind`)
+                    ,sum(SchoolA$`Very Behind`)
+                    ,sum(SchoolA$Completed))
+
+Distribution_A_percent <- c(sum(SchoolA$`Very Ahead`)/sum(school$Total_students)
+                    ,sum(SchoolA$Middling)/sum(school$Total_students)
+                    ,sum(SchoolA$Behind)/sum(school$Total_students)
+                    ,sum(SchoolA$`More Behind`)/sum(school$Total_students)
+                    ,sum(SchoolA$`Very Behind`)/sum(school$Total_students)
+                    ,sum(SchoolA$Completed)/sum(school$Total_students))
+```
+
+```{r Distribution B}
+Distribution_B <- c(sum(SchoolB$`Very Ahead`)
+                    ,sum(SchoolB$Middling)
+                    ,sum(SchoolB$Behind)
+                    ,sum(SchoolB$`More Behind`)
+                    ,sum(SchoolB$`Very Behind`)
+                    ,sum(SchoolB$Completed))
+
+Distribution_B_percent <- c(sum(SchoolB$`Very Ahead`)/sum(school$Total_students)
+                    ,sum(SchoolB$Middling)/sum(school$Total_students)
+                    ,sum(SchoolB$Behind)/sum(school$Total_students)
+                    ,sum(SchoolB$`More Behind`)/sum(school$Total_students)
+                    ,sum(SchoolB$`Very Behind`)/sum(school$Total_students)
+                    ,sum(SchoolB$Completed)/sum(school$Total_students))
+```
+
+```{r Distribution C}
+Distribution_C <- c(sum(SchoolC$`Very Ahead`)
+                    ,sum(SchoolC$Middling)
+                    ,sum(SchoolC$Behind)
+                    ,sum(SchoolC$`More Behind`)
+                    ,sum(SchoolC$`Very Behind`)
+                    ,sum(SchoolC$Completed))
+
+Distribution_C_percent <- c(sum(SchoolC$`Very Ahead`)/sum(school$Total_students)
+                    ,sum(SchoolC$Middling)/sum(school$Total_students)
+                    ,sum(SchoolC$Behind)/sum(school$Total_students)
+                    ,sum(SchoolC$`More Behind`)/sum(school$Total_students)
+                    ,sum(SchoolC$`Very Behind`)/sum(school$Total_students)
+                    ,sum(SchoolC$Completed)/sum(school$Total_students))
+```
+
+```{r Distribution D}
+Distribution_D <- c(sum(SchoolD$`Very Ahead`)
+                    ,sum(SchoolD$Middling)
+                    ,sum(SchoolD$Behind)
+                    ,sum(SchoolD$`More Behind`)
+                    ,sum(SchoolD$`Very Behind`)
+                    ,sum(SchoolD$Completed))
+
+Distribution_D_percent <- c(sum(SchoolD$`Very Ahead`)/sum(school$Total_students)
+                    ,sum(SchoolD$Middling)/sum(school$Total_students)
+                    ,sum(SchoolD$Behind)/sum(school$Total_students)
+                    ,sum(SchoolD$`More Behind`)/sum(school$Total_students)
+                    ,sum(SchoolD$`Very Behind`)/sum(school$Total_students)
+                    ,sum(SchoolD$Completed)/sum(school$Total_students))
+```
+
+```{r Distribution E}
+Distribution_E <- c(sum(SchoolE$`Very Ahead`)
+                    ,sum(SchoolE$Middling)
+                    ,sum(SchoolE$Behind)
+                    ,sum(SchoolE$`More Behind`)
+                    ,sum(SchoolE$`Very Behind`)
+                    ,sum(SchoolE$Completed))
+
+Distribution_E_percent <- c(sum(SchoolE$`Very Ahead`)/sum(school$Total_students)
+                    ,sum(SchoolE$Middling)/sum(school$Total_students)
+                    ,sum(SchoolE$Behind)/sum(school$Total_students)
+                    ,sum(SchoolE$`More Behind`)/sum(school$Total_students)
+                    ,sum(SchoolE$`Very Behind`)/sum(school$Total_students)
+                    ,sum(SchoolE$Completed)/sum(school$Total_students))
+```
+
+```{r Distribution E}
+Distribution_E <- c(sum(SchoolE$`Very Ahead`)
+                    ,sum(SchoolE$Middling)
+                    ,sum(SchoolE$Behind)
+                    ,sum(SchoolE$`More Behind`)
+                    ,sum(SchoolE$`Very Behind`)
+                    ,sum(SchoolE$Completed))
+
+Distribution_E_percent <- c(sum(SchoolE$`Very Ahead`)/sum(school$Total_students)
+                    ,sum(SchoolE$Middling)/sum(school$Total_students)
+                    ,sum(SchoolE$Behind)/sum(school$Total_students)
+                    ,sum(SchoolE$`More Behind`)/sum(school$Total_students)
+                    ,sum(SchoolE$`Very Behind`)/sum(school$Total_students)
+                    ,sum(SchoolE$Completed)/sum(school$Total_students))
+```
+
+```{r Binding Distributions}
+Distribution_Schoolwise <- rbind(Distribution_A,Distribution_B,Distribution_C,Distribution_D,Distribution_E)
+Distribution_Schoolwise_percent <- rbind(Distribution_A_percent,Distribution_B_percent,Distribution_C_percent
+                                        ,Distribution_D_percent,Distribution_E_percent)
+```
+
+```{r Pie charts}
+par(mfrow=c(3,2))
+pieA <- pie(Distribution_A, labels = c("Very Ahead", "Middling","Behind","More Behind", "Very Behind"
+                                                , "Completed"), main = "School A: Course Status")
+
+pieB <- pie(Distribution_B, labels = c("Very Ahead", "Middling","Behind","More Behind", "Very Behind"
+                                       , "Completed"), main = "School B: Course Status")
+
+pieC <- pie(Distribution_C, labels = c("Very Ahead", "Middling","Behind","More Behind", "Very Behind"
+                                       , "Completed"), main = "School C: Course Status")
+
+pieD <- pie(Distribution_D, labels = c("Very Ahead", "Middling","Behind","More Behind", "Very Behind"
+                                       , "Completed"), main = "School D: Course Status")
+
+pieE <- pie(Distribution_E, labels = c("Very Ahead", "Middling","Behind","More Behind", "Very Behind"
+                                       , "Completed"), main = "School E: Course Status")
+```
+
+```{r Distribution Schoolwise}
+Distribution_Schoolwise <- as.data.frame(Distribution_Schoolwise)
+colnames(Distribution_Schoolwise) <- c("Very Ahead", "Middling","Behind","More Behind", "Very Behind"
+                                       , "Completed")
+Distribution_Schoolwise_percent <- as.data.frame(Distribution_Schoolwise_percent)
+colnames(Distribution_Schoolwise_percent) <- c("Very Ahead", "Middling","Behind","More Behind", "Very Behind"
+                                       , "Completed")
+Distribution_Schoolwise_percent <- 100*Distribution_Schoolwise_percent
+
+Distribution_Schoolwise
+Distribution_Schoolwise_percent
+```
+
+# Percentage split within each school for course completion levels:
+
+# Very Ahead: 0 students
+# Middling: School B > School D > School C > School A > School E
+# Behind: School A > School E > School C > School B > School D
+# More Behind: School D > School A > School E > School C > School B
+# Very Behind: School D > School A > School C > School E > School B
+# Completed: School B > School E > School C > School A > School D
+
+# Number of students across course completion levels within each school:
+# Very Ahead: 0 students
+# Middling: School B > School A > School C = School E > School D
+# Behind: School A > School B > School E > School C > School D
+# More Behind: School A > School B = School C = School D = School E
+# Very Behind: School A > School C = School D = School E > School B
+# Completed: School B > School A > School E > School C > School D
+
+# S
+# School A: Poor
+# School B: Very Good
+# School C: Average
+# School D: Very Poor
+# School E: Good
+
+# School A needs to encourage students to improve the pace and bring more students to middling level.
+
+# School B is performing really well. Their focus area should be uplifting students to complete the course. 
+# Having many students complete the course, it can act as a positive pressure for the other students.
+
+# School C needs to focus on all the areas equally, since it is in the average level in comparison to other 
+# schools.
+
+# Counseling might be needed for the students in School D, as there are not many students in this school, 
+# which might have a negative impact, which is visible in the performance. 
+# It is possible that the students might need academic or other help.
+
+# School E is performing good. It needs to uplift the students in the behind level, 
+# and bring them to atleast middling level.
