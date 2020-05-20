@@ -1,0 +1,192 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r import}
+install.packages("jsonlite")
+library("jsonlite")
+JSON_file <- fromJSON("/Users/advaitiyer/hotelSurveySherison.json")
+df_Hotel <- as.data.frame(JSON_file, stringsAsFactors = FALSE)
+View(df_Hotel)
+```
+
+```{r Document term matrix creation}
+install.packages("tm") # Installed package "tm"
+library("tm")
+words.vec <- VectorSource(df_Hotel$freeText) # Inserted the dataset as a vector source
+words.corpus <- Corpus(words.vec) # Coerced the data into custom class "Corpus"
+words.corpus
+words.corpus <- tm_map(words.corpus, content_transformer(tolower)) # Converted all the words to lowercase
+words.corpus <- tm_map(words.corpus, removePunctuation) # Removed all punctuations from the sentences
+words.corpus <- tm_map(words.corpus,removeNumbers) # Removed all numbers from the data
+words.corpus <- tm_map(words.corpus,removeWords,stopwords("english")) # Removed all stopwords from the sentences
+termMatrix <- TermDocumentMatrix(words.corpus) # Created a term document matrix
+termMatrix
+```
+
+```{r Creating word cloud}
+install.packages("wordcloud") # Installed package "wordcloud"
+library("wordcloud")
+
+m <- as.matrix(termMatrix) # Converted term document matrix to matrix form
+wordCounts <- rowSums(m) # Calculated the sum of rows
+wordCounts <- sort(wordCounts, decreasing = TRUE) # Rearranged them in descenting order
+head(wordCounts)
+
+cloudFrame <- data.frame(word=names(wordCounts),freq=wordCounts) # Created a dataframe cloudFrame of word against frequency
+Word_Cloud <- wordcloud(cloudFrame$word,cloudFrame$freq) # Created wordcloud using both word and frequency; the size of the word depends on the frequency
+Word_Cloud1 <- wordcloud(names(wordCounts),min.freq = 2,max.words = 50,rot.per = 0.35, colors = brewer.pal(0,"Dark2")) # Customized the visualization of the wordcloud
+
+```
+
+```{r import positive and negative word corpus}
+pos <- "positive-words.txt" # Imported the positive words file from directory
+neg <- "negative-words.txt" # Imported the negative words file from directory
+
+p <- scan(pos,character(0),sep = "\n") # Seperated all positive words
+n <- scan(neg,character(0),sep = "\n") # Seperated all negative words
+
+head(p,100) # Viewed the first 35 rows in the positive word repository
+head(n,100) # Viewed the first 35 rows in the negative word repository
+
+p <- p[-1:-34] # Removed the first 35 columns in the positive words repository
+n <- n[-1:-34] # Removed the first 35 columns in the negative words repository
+head(p)
+head(n)
+```
+
+```{r Percent of positive and negative words}
+totalWords <- sum(wordCounts) # Total number of words
+words <- names(wordCounts) # Vector with all words
+
+matched_pos <- match(words,p,nomatch = 0) # Matched the words in "words" and "p"
+matched_pos
+mCounts <- wordCounts[which(matched_pos!=0)] # Identified unique positive words
+length(mCounts) # Count of unique positive words
+
+mWords <- names(mCounts) 
+nPos <- sum(mCounts)
+nPos # Total number of positive words (includes number of repetitions)
+
+matched_neg <- match(words,n,nomatch = 0) # Matched the words in "words" and "n"
+matched_neg
+nCounts <- wordCounts[which(matched_neg!=0)] # Identified unique negative words
+length(nCounts) # Count of unique negative words
+
+nWords <- names(nCounts) 
+nNeg <- sum(nCounts)
+nNeg # Total number of negative words (includes number of repetitions)
+
+Total_Words <- length(words) # Calculate total length of all words in the dataset
+ratioPos <- nPos/Total_Words # Calculate ratio of positive words against all words
+ratioPos
+
+ratioNeg <- nNeg/Total_Words # Calculate ratio of negative words against all words
+ratioNeg
+```
+
+```{r Visualizing results}
+cloudFrame <- data.frame(word=names(wordCounts),freq=wordCounts) # Created a dataframe cloudFrame of word against frequency
+Word_Cloud <- wordcloud(cloudFrame$word,cloudFrame$freq) # Created wordcloud using both word and frequency; the size of the word depends on the frequency
+
+mCounts_1 <- subset(mCounts,mCounts >= 2) # Barplot of positive words that matched atleast twice
+barplot(mCounts_1, main = "Positive Words", ylab = "Frequency", las = 2)
+
+nCounts_1 <- subset(nCounts,nCounts >= 2) # Barplot of negative words that matched atleast twice
+barplot(nCounts_1, main = "Negative Words", ylab = "Frequency", las = 2)
+```
+
+```{r Word cloud for happy customers}
+happy_customers <- subset(df_Hotel,df_Hotel$overallCustSat >=8) # Created subset for Happy customers with Overall Satisfaction Score greater than or equal to 8
+View(happy_customers)
+summary(happy_customers)
+unhappy_customers <- subset(df_Hotel,df_Hotel$overallCustSat < 8) # Created subset for Unhappy customers with Overall Satisfaction Score less than 8
+View(unhappy_customers)
+summary(unhappy_customers)
+
+happy.words.vec <- VectorSource(happy_customers$freeText) # Inserted the dataset as a vector source
+happy.words.corpus <- Corpus(happy.words.vec) # Coerced the data into custom class "Corpus"
+happy.words.corpus
+happy.words.corpus <- tm_map(happy.words.corpus, content_transformer(tolower)) # Converted all the words to lowercase
+happy.words.corpus <- tm_map(happy.words.corpus, removePunctuation) # Removed all punctuations from the sentences
+happy.words.corpus <- tm_map(happy.words.corpus,removeNumbers) # Removed all numbers from the data
+happy.words.corpus <- tm_map(happy.words.corpus,removeWords,stopwords("english")) # Removed all stopwords from the sentences
+HappyCust_termMatrix <- TermDocumentMatrix(happy.words.corpus) # Created a term document matrix
+HappyCust_termMatrix
+```
+
+```{r Corpus for happy customers}
+happy_customers <- subset(df_Hotel,df_Hotel$overallCustSat >=8) # Created subset for Happy customers with Overall Satisfaction Score greater than or equal to 8
+View(happy_customers)
+summary(happy_customers)
+unhappy_customers <- subset(df_Hotel,df_Hotel$overallCustSat < 8) # Created subset for Unhappy customers with Overall Satisfaction Score less than 8
+View(unhappy_customers)
+summary(unhappy_customers)
+
+happy.words.vec <- VectorSource(happy_customers$freeText) # Inserted the dataset as a vector source
+happy.words.corpus <- Corpus(happy.words.vec) # Coerced the data into custom class "Corpus"
+happy.words.corpus
+happy.words.corpus <- tm_map(happy.words.corpus, content_transformer(tolower)) # Converted all the words to lowercase
+happy.words.corpus <- tm_map(happy.words.corpus, removePunctuation) # Removed all punctuations from the sentences
+happy.words.corpus <- tm_map(happy.words.corpus,removeNumbers) # Removed all numbers from the data
+happy.words.corpus <- tm_map(happy.words.corpus,removeWords,stopwords("english")) # Removed all stopwords from the sentences
+HappyCust_termMatrix <- TermDocumentMatrix(happy.words.corpus) # Created a term document matrix
+HappyCust_termMatrix
+```
+
+```{r Corpus for unhappy customers}
+unhappy.words.vec <- VectorSource(unhappy_customers$freeText) # Inserted the dataset as a vector source
+unhappy.words.corpus <- Corpus(unhappy.words.vec) # Coerced the data into custom class "Corpus"
+unhappy.words.corpus
+unhappy.words.corpus <- tm_map(unhappy.words.corpus, content_transformer(tolower)) # Converted all the words to lowercase
+unhappy.words.corpus <- tm_map(unhappy.words.corpus, removePunctuation) # Removed all punctuations from the sentences
+unhappy.words.corpus <- tm_map(unhappy.words.corpus,removeNumbers) # Removed all numbers from the data
+unhappy.words.corpus <- tm_map(unhappy.words.corpus,removeWords,stopwords("english")) # Removed all stopwords from the sentences
+UnhappyCust_termMatrix <- TermDocumentMatrix(unhappy.words.corpus) # Created a term document matrix
+UnhappyCust_termMatrix
+```
+
+```{r Wordcloud of happy customers}
+happycust_m <- as.matrix(HappyCust_termMatrix) # Converted term document matrix to matrix form
+happycust_wordCounts <- rowSums(happycust_m) # Calculated the sum of rows
+happycust_wordCounts <- sort(happycust_wordCounts, decreasing = TRUE) # Rearranged them in descenting order
+head(happycust_wordCounts)
+happycust_cloudFrame <- data.frame(word=names(happycust_wordCounts),freq=happycust_wordCounts) # Created a dataframe cloudFrame of word against frequency
+happycust_Word_Cloud <- wordcloud(happycust_cloudFrame$word,happycust_cloudFrame$freq) # Created wordcloud using both word and frequency; the size of the word depends on the frequency
+happycust_Word_Cloud1 <- wordcloud(names(happycust_wordCounts),min.freq = 2,max.words = 50,rot.per = 0.35, colors = brewer.pal(0,"Dark2")) # Customized the visualization of the wordcloud
+```
+
+```{r Wordcloud of unhappy customers}
+unhappycust_m <- as.matrix(UnhappyCust_termMatrix) # Converted term document matrix to matrix form
+unhappycust_wordCounts <- rowSums(unhappycust_m) # Calculated the sum of rows
+unhappycust_wordCounts <- sort(unhappycust_wordCounts, decreasing = TRUE) # Rearranged them in descenting order
+head(unhappycust_wordCounts)
+unhappycust_cloudFrame <- data.frame(word=names(unhappycust_wordCounts),freq=unhappycust_wordCounts) # Created a dataframe cloudFrame of word against frequency
+unhappycust_Word_Cloud <- wordcloud(unhappycust_cloudFrame$word,unhappycust_cloudFrame$freq) # Created wordcloud using both word and frequency; the size of the word depends on the frequency
+unhappycust_Word_Cloud1 <- wordcloud(names(unhappycust_wordCounts),min.freq = 2,max.words = 50,rot.per = 0.35, colors = brewer.pal(0,"Dark2")) # Customized the visualization of the wordcloud
+```
+
+```{r Word usage}
+happycust_totalWords <- sum(happycust_wordCounts) # Total number of words
+happycust_words <- names(happycust_wordCounts) # Vector with all words
+happycust_matched_pos <- match(happycust_words,p,nomatch = 0) # Matched the words in "words" and "p"
+happycust_matched_pos
+happycust_mCounts <- happycust_wordCounts[which(happycust_matched_pos!=0)] # Identified unique positive words
+length(happycust_mCounts) # Count of unique positive words
+happycust_mWords <- names(happycust_mCounts) 
+happycust_nPos <- sum(happycust_mCounts)
+happycust_nPos # Total number of positive words (includes number of repetitions)
+happycust_matched_neg <- match(happycust_words,n,nomatch = 0) # Matched the words in "words" and "n"
+happycust_matched_neg
+happycust_nCounts <- happycust_wordCounts[which(happycust_matched_neg!=0)] # Identified unique negative words
+length(happycust_nCounts) # Count of unique negative words
+happycust_nWords <- names(happycust_nCounts) 
+happycust_nNeg <- sum(happycust_nCounts)
+happycust_nNeg # Total number of negative words (includes number of repetitions)
+happycust_Total_Words <- length(happycust_words) # Calculate total length of all words in the dataset
+happycust_ratioPos <- happycust_nPos/happycust_Total_Words # Calculate ratio of positive words against all words
+happycust_ratioPos
+happycust_ratioNeg <- happycust_nNeg/happycust_Total_Words # Calculate ratio of negative words against all words
+happycust_ratioNeg
+```

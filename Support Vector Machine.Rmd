@@ -1,0 +1,52 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r import}
+# Installed package jsonlite to read-in the data set, and then converted to data frame
+# Imported the dataset "hotelSurveyBarriot.json" using jsonlite
+install.packages("jsonlite")
+library("jsonlite")
+getwd()
+setwd("/Users/advaitiyer")
+JSON_file <- fromJSON("/Users/advaitiyer/hotelSurveyBarriot.json")
+hotelSurvey <- as.data.frame(JSON_file)
+View(hotelSurvey)
+```
+
+```{r binning}
+# Using ifelse command, categorized the overall customer satisfaction to Happy (>=8) and Not Happy (<8). Removed the original Overall Customer Satisfaction from the dataset.
+hotelSurvey_1 <- hotelSurvey
+hotelSurvey_1$overallCustSat1 <- ifelse(hotelSurvey_1$overallCustSat>=8, "Happy", "Not Happy")
+hotelSurvey_1$freeText <- NULL
+hotelSurvey_1$overallCustSat <- NULL
+View(hotelSurvey_1)
+```
+
+```{r Support Vector Machine}
+install.packages("kernlab")
+library(kernlab)
+
+randIndex <- sample(1:dim(hotelSurvey_1)[1]) # Created 10000 random samples of the dataset
+
+cut_point <- floor(2*dim(hotelSurvey_1)[1]/3) # Created a cut-off point at the 2/3rd observation of the dataset
+cut_point
+
+trainData <- hotelSurvey_1[randIndex[1:cut_point],] # Created train dataset using randomized set of indices created in the randIndex, selecting the first 1/3rd observations.
+testData <- hotelSurvey_1[randIndex[(cut_point+1):dim(hotelSurvey_1)[1]],] # Created test dataset using randomized set of indices created in the randIndex, selecting the last 2/3rd observations.
+
+ksvm(overallCustSat1~checkInSat+hotelFriendly+hotelClean, data=trainData, kernel= "rbfdot", kpar="automatic",C=5,cross=3,prob.model=TRUE)
+
+```
+
+```{r Model Evaluation}
+svmOutput <- ksvm(overallCustSat1~checkInSat+hotelFriendly+hotelClean, data=trainData, kernel= "rbfdot", kpar="automatic",C=5,cross=3,prob.model=TRUE)
+svmOutput
+
+svmPred <- predict(svmOutput, testData, type = "votes")
+svmPred
+
+head(svmPred)
+str(svmPred)
+```
